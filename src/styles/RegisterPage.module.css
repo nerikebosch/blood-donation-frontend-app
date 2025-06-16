@@ -1,0 +1,171 @@
+.form {
+    min-height: 900px;
+    max-width: 600px;
+    padding: 30px;
+    padding-top: 80px;
+    border-radius: 0;
+
+    @media (max-width: 48em) {
+        max-width: 100%;
+    }
+}
+
+.wrapper {
+    background-color: yellow;
+    background-size: cover;
+    background-image: url('/blood_donation.jpg');
+    justify-content: center;
+    align-items: center;
+    color: var(--mantine-color-black);
+}
+
+.title {
+    font-family: Outfit, var(--mantine-font-family);
+    font-weight: 500;
+    text-align: center;
+    margin-top: var(--mantine-spacing-md);
+    margin-bottom: 50px;
+}
+
+.text {
+    font-family: var(--mantine-font-family);
+    color: var(--mantine-color-black)
+}
+
+[data-mantine-color-scheme="light"] .title {
+    color: var(--mantine-color-black);
+}
+
+[data-mantine-color-scheme="dark"] .title {
+    color: var(--mantine-color-white);
+}
+
+[data-mantine-color-scheme="light"] .form {
+    border-right: 1px solid var(--mantine-color-black);
+    color: var(--mantine-color-black);
+}
+
+[data-mantine-color-scheme="dark"] .form {
+    border-right: 1px solid var(--mantine-color-black);
+}
+
+/* Fix for Select dropdown options */
+:global(.mantine-Select-dropdown) {
+    background-color: white !important;
+}
+
+:global(.mantine-Select-item) {
+    color: black !important;
+}
+
+:global(.mantine-Select-item:hover) {
+    background-color: #f8f9fa !important;
+    color: black !important;
+}
+
+/* Fix for DateInput calendar layout and styling */
+:global(.mantine-DateInput-dropdown) {
+    background-color: white !important;
+    max-width: 300px !important;
+    width: auto !important;
+}
+
+:global(.mantine-Calendar-calendar) {
+    max-width: 280px !important;
+}
+
+:global(.mantine-Calendar-calendarHeader) {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 10px !important;
+    max-width: 280px !important;
+}
+
+:global(.mantine-Calendar-calendarHeaderControl) {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+:global(.mantine-Calendar-calendarHeaderLevel) {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    flex: 1 !important;
+    text-align: center !important;
+}
+
+:global(.mantine-Calendar-day) {
+    color: black !important;
+    font-size: 14px !important;
+    width: 35px !important;
+    height: 35px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+:global(.mantine-Calendar-day:hover) {
+    background-color: #f8f9fa !important;
+    color: black !important;
+}
+
+:global(.mantine-Calendar-day[data-selected]) {
+    background-color: #339af0 !important;
+    color: white !important;
+}
+
+:global(.mantine-Calendar-day[data-today]) {
+    background-color: #e3f2fd !important;
+    color: black !important;
+}
+
+:global(.mantine-Calendar-weekday) {
+    color: #666 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    width: 35px !important;
+    height: 25px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+:global(.mantine-Calendar-month) {
+    display: grid !important;
+    grid-template-columns: repeat(7, 35px) !important;
+    gap: 1px !important;
+}
+
+/* Fix month/year picker controls */
+:global(.mantine-Calendar-monthPickerControl),
+:global(.mantine-Calendar-yearPickerControl),
+:global(.mantine-Calendar-monthsListControl),
+:global(.mantine-Calendar-yearsListControl) {
+    color: black !important;
+    font-size: 14px !important;
+    height: 30px !important;
+}
+
+:global(.mantine-Calendar-monthPickerControl:hover),
+:global(.mantine-Calendar-yearPickerControl:hover),
+:global(.mantine-Calendar-monthsListControl:hover),
+:global(.mantine-Calendar-yearsListControl:hover) {
+    background-color: #f8f9fa !important;
+    color: black !important;
+}
+
+/* Alternative: Force light color scheme for dropdowns */
+:global([data-mantine-color-scheme="dark"] .mantine-Select-dropdown),
+:global([data-mantine-color-scheme="dark"] .mantine-DateInput-dropdown) {
+    background-color: white !important;
+}
+
+:global([data-mantine-color-scheme="dark"] .mantine-Select-item),
+:global([data-mantine-color-scheme="dark"] .mantine-DatePicker-day) {
+    color: black !important;
+}
