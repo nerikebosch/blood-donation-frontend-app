@@ -42,7 +42,15 @@ export function LoginPage() {
 
             const data = await response.json();
             localStorage.setItem('token', data.token); // Save token for future requests
-            router.push('/homepage');
+            localStorage.setItem('role', data.role)
+            console.log("role of user " + data.role)
+
+            if (data.role === 'ROLE_ADMIN') {
+                router.push('/admin/homepage');
+            } else {
+                router.push('/homepage');
+            }
+
         } catch (err) {
             console.error(err);
             setError('Invalid credentials');

@@ -48,31 +48,37 @@ const donorMenuData = [
         icon: IconCalendar,
         title: 'Appointments',
         description: 'View, create, or track appointment status',
+        href: '/appointment',
     },
     {
         icon: IconVaccine,
         title: 'Medical Reports',
         description: 'View past medical test results',
+        href: '/medical-reports',
     },
     {
         icon: IconUser,
         title: 'Profile',
         description: 'View or update personal and eligibility info',
+        href: '/profile',
     },
     {
         icon: IconDroplet,
         title: 'Donation History',
         description: 'Track all successful donations',
+        href: '/donation-history',
     },
     {
         icon: IconBell,
         title: 'Notifications',
         description: 'Appointment updates, eligibility reminders',
+        href: '/notifications',
     },
     {
         icon: IconHelpCircle,
         title: 'FAQ / Learn More',
         description: 'Info about donation process & safety',
+        href: '/faq',
     },
 ];
 
@@ -85,21 +91,24 @@ export function HomePage() {
     const autoplay = useRef(Autoplay({delay: 3000}));
 
     const links = donorMenuData.map((item) => (
-        <UnstyledButton className={classes.subLink} key={item.title}>
-            <Group wrap="nowrap" align="flex-start">
-                <ThemeIcon size={34} variant="default" radius="md">
-                    <item.icon size={22} color={theme.colors.red[6]}/>
-                </ThemeIcon>
-                <div>
-                    <Text size="sm" fw={500}>
-                        {item.title}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                        {item.description}
-                    </Text>
-                </div>
-            </Group>
-        </UnstyledButton>
+        <Link href={item.href} key={item.title} className={classes.subLink}>
+            <UnstyledButton className={classes.subLink} key={item.title}>
+                <Group wrap="nowrap" align="flex-start">
+                    <ThemeIcon size={34} variant="default" radius="md">
+                        <item.icon size={22} color={theme.colors.red[6]}/>
+                    </ThemeIcon>
+                    <div>
+                        <Text size="sm" fw={500}>
+                            {item.title}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                            {item.description}
+                        </Text>
+                    </div>
+                </Group>
+            </UnstyledButton>
+        </Link>
+
     ));
 
     return (
