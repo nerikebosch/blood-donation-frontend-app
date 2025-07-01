@@ -13,47 +13,45 @@ import {
     Title,
 } from '@mantine/core';
 import classes from '../../styles/LoginPage.module.css';
-import {useState} from "react";
-import { useRouter} from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 export function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username,
-                    password,
-                }),
+            const response = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
             });
 
             if (!response.ok) {
-                throw new Error('Login failed');
+                throw new Error("Login failed");
             }
 
             const data = await response.json();
-            localStorage.setItem('token', data.token); // Save token for future requests
-            localStorage.setItem('role', data.role)
-            console.log("role of user " + data.role)
 
-            if (data.role === 'ROLE_ADMIN') {
-                router.push('/admin/homepage');
+            // Use context login function to update state & localStorage
+            login(data.token, data.role);
+
+            if (data.role === "ROLE_ADMIN") {
+                router.push("/admin/homepage");
+            } else if (data.role === "ROLE_DONOR") {
+                router.push("/donor/homepage");
             } else {
-                router.push('/homepage');
+                router.push("/unauthorized");
             }
-
         } catch (err) {
             console.error(err);
-            setError('Invalid credentials');
+            setError("Invalid credentials");
         }
     };
 

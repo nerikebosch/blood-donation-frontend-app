@@ -1,0 +1,26 @@
+.root {
+    padding-top: 80px;
+    padding-bottom: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.title {
+    font-weight: 700;
+    font-size: 34px;
+    margin-bottom: var(--mantine-spacing-md);
+    font-family: Outfit, var(--mantine-font-family);
+    color: #e03131; /* subtle red to indicate error */
+
+    @media (max-width: 768px) {
+        font-size: 28px;
+    }
+}
+
+.control {
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+}

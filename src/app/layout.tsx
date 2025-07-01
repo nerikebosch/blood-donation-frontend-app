@@ -2,6 +2,7 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { MantineProvider, createTheme } from "@mantine/core";
+import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 
 // Import Mantine CSS
@@ -55,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <head />
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <MantineProvider theme={theme} defaultColorScheme="light">
-            {children}
+            <AuthProvider> {children} </AuthProvider>
         </MantineProvider>
         </body>
         </html>

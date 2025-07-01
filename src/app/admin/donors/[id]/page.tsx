@@ -1,4 +1,4 @@
-import DonorProfilePage from "@/app/profile/DonorProfilePage";
+import DonorProfilePage from './DonorProfilePage'
 
 export default function Page() {
     return <DonorProfilePage/>
