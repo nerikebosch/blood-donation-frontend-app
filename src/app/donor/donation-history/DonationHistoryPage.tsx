@@ -1,22 +1,23 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from 'react';
-import { AppointmentList } from './AppointmentList';
-import { AppointmentBooking } from './AppointmentBooking';
-import { Box, Title, Container, Loader, Text } from '@mantine/core';
-import { LOCATION_OPTIONS } from '@/constants/locations';
+import {Badge, Card, Container, Group, Loader, Text, Title} from "@mantine/core";
+import {useEffect, useState} from "react";
 import { useAuth } from "@/lib/auth";
 
-export default function AppointmentPage() {
+export function DonationHistoryPage() {
+    const now = new Date();
     const [appointments, setAppointments] = useState([]);
     const [slots, setSlots] = useState([]);
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
     const { token } = useAuth();
 
+
     const fetchAll = async () => {
         setLoading(true);
         try {
+            console.log("token: "+token);
+
             const [appointmentsRes, slotsRes] = await Promise.all([
                 fetch('http://localhost:8080/api/appointments/mine', {
                     method: 'GET',
@@ -46,7 +47,6 @@ export default function AppointmentPage() {
             }
 
             const appointments = await appointmentsRes.json();
-            console.log("Appointments:", appointments);
             const slots = await slotsRes.json();
             console.log("Raw slots text:", slots);
 
@@ -75,19 +75,37 @@ export default function AppointmentPage() {
         );
     }
 
-    return (
-        <Container py="lg">
-            <Title order={2} mb="md">Your Appointments</Title>
-            <AppointmentList appointments={appointments} />
+    const past = appointments.filter(appt => new Date(appt.slot.dateTime) <= now);
 
-            <Box mt="xl">
-                <Title order={2} mb="md">Book a New Appointment</Title>
-                <AppointmentBooking
-                    slots={slots}
-                    locations={LOCATION_OPTIONS}
-                    onBooked={fetchAll} // Refresh after booking
-                />
-            </Box>
-        </Container>
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'CONFIRMED': return 'green';
+            case 'CANCELLED': return 'red';
+            case 'COMPLETED': return 'blue';
+            default: return 'gray';
+        }
+    };
+
+    const renderCard = (appt) => (
+
+        <Card key={appt.id} shadow="sm" radius="md" withBorder mb="sm">
+            <Group position="apart">
+                <Text>{new Date(appt.slot.dateTime).toLocaleString()}</Text>
+                <Badge color={getStatusColor(appt.appointmentStatus)}>
+                    {appt.appointmentStatus}
+                </Badge>
+            </Group>
+            <Text size="sm" c="dimmed">
+                {appt.slot.location}
+            </Text>
+        </Card>
+    );
+    return (
+        <>
+            <Container py="lg">
+                <Title order={3} mb="xs">Past Appointments</Title>
+                {past.length ? past.map(renderCard) : <Text size="sm">No past appointments yet.</Text>}
+            </Container>
+        </>
     );
 }

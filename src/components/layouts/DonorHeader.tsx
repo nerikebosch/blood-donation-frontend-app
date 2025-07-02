@@ -31,9 +31,10 @@ import {
     Image,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useRef } from 'react';
+import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
 import classes from '../../styles/HomePage.module.css';
+import {useRouter} from "next/navigation";
 
 const donorMenuData = [
     {
@@ -78,6 +79,9 @@ export default function DonorHeader() {
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
     const theme = useMantineTheme();
+
+    const { logout } = useAuth();
+    const router = useRouter();
 
     const links = donorMenuData.map((item) => (
         <Link href={item.href} key={item.title} className={classes.subLink}>
@@ -147,9 +151,16 @@ export default function DonorHeader() {
                     </Group>
 
                     <Group visibleFrom="sm">
-                        <Link href="/loginpage">
-                            <Button variant="default">Login</Button>
-                        </Link>
+                        <Button
+                            variant="default"
+                            onClick={() => {
+                                localStorage.removeItem("token");
+                                localStorage.removeItem("role");
+                                window.location.href = "/loginpage";
+                            }}
+                        >
+                            Logout
+                        </Button>
                     </Group>
 
                     <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
@@ -177,8 +188,11 @@ export default function DonorHeader() {
                     <Collapse in={linksOpened}>{links}</Collapse>
                     <Divider my="sm" />
                     <Group justify="center" grow pb="xl" px="md">
-                        <Button variant="default">
-                            <Link href="/loginpage">Login</Link>
+                        <Button variant="default" onClick={() => {
+                            logout(); // clears token and role
+                            router.push("/loginpage");
+                        }}>
+                            Logout
                         </Button>
                     </Group>
                 </ScrollArea>

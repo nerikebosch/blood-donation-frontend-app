@@ -1,8 +1,18 @@
-"use client"
+"use client";
 
+import {
+    Table,
+    Button,
+    Modal,
+    Text,
+    Title,
+    Container,
+    Anchor,
+    Group,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
-import { Card, Text, Title, Grid } from "@mantine/core";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 interface Donor {
     userId: number;
@@ -13,18 +23,17 @@ interface Donor {
 
 export default function AdminDonorList() {
     const [donors, setDonors] = useState<Donor[]>([]);
+    const [deleteTarget, setDeleteTarget] = useState<Donor | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const router = useRouter();
+    const { token } = useAuth();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-
-        // First, get all donor profile IDs
         fetch("http://localhost:8080/api/donor-profiles", {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => res.json())
             .then(async (profiles) => {
-                // For each profile, get the user
                 const results: Donor[] = await Promise.all(
                     profiles.map(async (profile: any) => {
                         const res = await fetch(`http://localhost:8080/api/user/${profile.userId}`, {
@@ -43,24 +52,85 @@ export default function AdminDonorList() {
             });
     }, []);
 
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+
+        try {
+            await fetch(`http://localhost:8080/api/user/${deleteTarget.userId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setDonors((prev) => prev.filter((d) => d.userId !== deleteTarget.userId));
+        } catch (error) {
+            console.error("Failed to delete user:", error);
+        } finally {
+            setIsModalOpen(false);
+            setDeleteTarget(null);
+        }
+    };
+
+    const rows = donors.map((donor) => (
+        <Table.Tr key={donor.userId}>
+            <Table.Td>{donor.name} {donor.surname}</Table.Td>
+            <Table.Td>{donor.email}</Table.Td>
+            <Table.Td w={85}>
+                <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => {
+                        setDeleteTarget(donor);
+                        setIsModalOpen(true);
+                    }}
+                >
+                    Delete
+                </Button>
+            </Table.Td>
+            <Table.Td w={85}>
+                <Button
+                    size="xs"
+                    onClick={() => router.push(`/admin/donors/${donor.userId}`)}
+                >
+                    Edit
+                </Button>
+            </Table.Td>
+        </Table.Tr>
+    ));
+
     return (
-        <div>
+        <Container>
             <Title order={2} mb="md">Donors</Title>
-            <Grid>
-                {donors.map((donor) => (
-                    <Grid.Col span={4} key={donor.userId}>
-                        <Card
-                            shadow="sm"
-                            withBorder
-                            onClick={() => router.push(`/admin/donors/${donor.userId}`)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <Text fw={500}>{donor.name} {donor.surname}</Text>
-                            <Text size="sm" c="dimmed">{donor.email}</Text>
-                        </Card>
-                    </Grid.Col>
-                ))}
-            </Grid>
-        </div>
+
+            <Table striped highlightOnHover withColumnBorders>
+                <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Email</Table.Th>
+                        <Table.Th>Delete</Table.Th>
+                        <Table.Th>Edit</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+
+            <Modal
+                opened={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Confirm Delete"
+                centered
+            >
+                <Text mb="md">
+                    Are you sure you want to delete{" "}
+                    <strong>{deleteTarget?.name} {deleteTarget?.surname}</strong>?
+                </Text>
+                <Group mt="md">
+                    <Button variant="default" onClick={() => setIsModalOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button color="red" onClick={handleDelete}>
+                        Delete
+                    </Button>
+                </Group>
+            </Modal>
+        </Container>
     );
 }

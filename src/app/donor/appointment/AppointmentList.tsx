@@ -39,11 +39,6 @@ export function AppointmentList({ appointments }) {
         <>
             <Title order={3} mb="xs">Upcoming Appointments</Title>
             {upcoming.length ? upcoming.map(renderCard) : <Text size="sm">No upcoming appointments.</Text>}
-
-            <Divider my="md" />
-
-            <Title order={3} mb="xs">Past Appointments</Title>
-            {past.length ? past.map(renderCard) : <Text size="sm">No past appointments yet.</Text>}
         </>
     );
 }

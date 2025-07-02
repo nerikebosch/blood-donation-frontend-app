@@ -2,45 +2,57 @@
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
-import { useState, useMemo } from "react";
+import {useState, useMemo, useEffect} from "react";
 import {
-    Box, Select, Button, Text, Paper
+    Box,
+    Button,
+    Text,
+    Paper,
+    Container,
+    SimpleGrid,
+    Grid,
+    Card,
+    Title,
+    Group
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
-import { LOCATION_OPTIONS } from '@/constants/locations';
-import dayjs from "dayjs"; // Adjust path as needed
+import dayjs from "dayjs";
+import { useAuth } from "@/lib/auth";
 
 export function AppointmentBooking({ slots, onBooked }) {
-    const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loadingSlotId, setLoadingSlotId] = useState<number | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
+    const { token } = useAuth();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await fetch('http://localhost:8080/api/user/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                setUserId(data.id); // 👈 Set userId from response
+            } catch (err) {
+                console.error("Failed to fetch user info:", err);
+            }
+        };
+        fetchUser();
+    }, [token]);
 
     const filteredSlots = useMemo(() => {
-        if (!selectedLocation || !selectedDate) return [];
+        if (!selectedDate) return [];
+        return slots.filter(slot =>
+            dayjs(slot.dateTime).isSame(dayjs(selectedDate), 'day')
+        );
+    }, [slots, selectedDate]);
 
-
-        return slots.filter(slot => {
-            return (
-                slot.location === selectedLocation &&
-                dayjs(slot.dateTime).isSame(dayjs(selectedDate), 'day')
-            );
-        });
-    }, [slots, selectedLocation, selectedDate]);
-
-    console.log("Filtered slots:", filteredSlots);
-
-    const slotOptions = filteredSlots.map(slot => ({
-        value: slot.id.toString(),
-        label: new Date(slot.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }));
-
-    const handleBook = async () => {
-        if (!selectedSlotId) return;
-        setLoading(true);
+    const handleBook = async (slotId: number) => {
+        setLoadingSlotId(slotId);
         try {
-            const token = localStorage.getItem('token');
-            console.log("token: "+token);
             const res = await fetch('http://localhost:8080/api/appointments', {
                 method: 'POST',
                 headers: {
@@ -48,13 +60,10 @@ export function AppointmentBooking({ slots, onBooked }) {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    slotId: parseInt(selectedSlotId),
-                    userId: 12
+                    slotId,
+                    userId
                 }),
             });
-
-            console.log("slotid: "+ selectedSlotId);
-            console.log("value"+res)
 
             if (!res.ok) {
                 const text = await res.text();
@@ -62,58 +71,65 @@ export function AppointmentBooking({ slots, onBooked }) {
             }
 
             alert('Appointment booked successfully!');
-            setSelectedLocation(null);
             setSelectedDate(null);
-            setSelectedSlotId(null);
-            onBooked(); // refresh list
+            onBooked();
         } catch (err) {
             console.error('Error booking appointment:', err);
             alert('Booking failed.');
         } finally {
-            setLoading(false);
+            setLoadingSlotId(null);
         }
     };
 
     return (
         <Paper p="md" withBorder radius="md">
-            <Select
-                label="Select Donation Location"
-                placeholder="Choose a location"
-                data={LOCATION_OPTIONS}
-                value={selectedLocation}
-                onChange={setSelectedLocation}
-                mb="md"
-            />
+            <Container>
+                <Grid>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <DatePicker
+                            value={selectedDate}
+                            onChange={setSelectedDate}
+                            minDate={new Date()}
+                            label="Select a Date"
+                            placeholder="Pick a date"
+                            mb="md"
+                        />
+                    </Grid.Col>
 
-            <DatePicker
-                value={selectedDate}
-                onChange={setSelectedDate}
-                minDate={new Date()}
-                label="Select a Date"
-                placeholder="Pick a date"
-                mb="md"
-            />
-
-            {selectedLocation && selectedDate && (
-                <Select
-                    label="Available Time Slots"
-                    placeholder={slotOptions.length ? "Choose a time" : "No available slots"}
-                    data={slotOptions}
-                    value={selectedSlotId}
-                    onChange={setSelectedSlotId}
-                    mb="md"
-                />
-            )}
-
-            <Button
-                mt="lg"
-                color="red"
-                disabled={!selectedSlotId || loading}
-                loading={loading}
-                onClick={handleBook}
-            >
-                Book Appointment
-            </Button>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                        {selectedDate && (
+                            <>
+                                <Title order={4} mb="sm">Available Slots</Title>
+                                {filteredSlots.length === 0 && (
+                                    <Text>No slots available for this date.</Text>
+                                )}
+                                <SimpleGrid cols={1} spacing="sm">
+                                    {filteredSlots.map(slot => (
+                                        <Card key={slot.id} shadow="sm" padding="md" radius="md" withBorder>
+                                            <Group justify="space-between" align="center">
+                                                <Box>
+                                                    <Text fw={600}>{slot.location}</Text>
+                                                    <Text size="sm" c="dimmed">
+                                                        {new Date(slot.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </Text>
+                                                </Box>
+                                                <Button
+                                                    size="xs"
+                                                    color="red"
+                                                    onClick={() => handleBook(slot.id)}
+                                                    loading={loadingSlotId === slot.id}
+                                                >
+                                                    Book
+                                                </Button>
+                                            </Group>
+                                        </Card>
+                                    ))}
+                                </SimpleGrid>
+                            </>
+                        )}
+                    </Grid.Col>
+                </Grid>
+            </Container>
         </Paper>
     );
 }

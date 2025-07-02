@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
 export default function DonorProfile() {
     const { id } = useParams();
@@ -30,8 +31,10 @@ export default function DonorProfile() {
         lastDonationDate: "",
     });
 
+    const { token } = useAuth();
+
     useEffect(() => {
-        const token = localStorage.getItem("token");
+
 
         fetch(`http://localhost:8080/api/user/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -55,7 +58,6 @@ export default function DonorProfile() {
     };
 
     const handleSave = async () => {
-        const token = localStorage.getItem("token");
 
         await fetch(`http://localhost:8080/api/user/${id}`, {
             method: "PUT",

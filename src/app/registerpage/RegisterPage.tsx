@@ -17,6 +17,7 @@ import {
     Select
 } from "@mantine/core";
 import classes from '../../styles/RegisterPage.module.css';
+import { useAuth } from '@/lib/auth';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -41,7 +42,7 @@ export function RegisterPage() {
 
     // values for registering the user
 
-
+    const { login } = useAuth();
 
     const nextStep = () => setActive((current) => (current < 1 ? current + 1 : current));
     const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
@@ -90,6 +91,10 @@ export function RegisterPage() {
             const loginResult = await loginResponse.json();
             const token = loginResult.token;
 
+            const role = loginResult.role || "ROLE_DONOR"; // fallback
+
+            login(token,role)
+
             // 2) Create donor profile using userId
             console.log("DOB type:", typeof formData.dateOfBirth, formData.dateOfBirth);
             console.log("userId: " , userId);
@@ -111,7 +116,7 @@ export function RegisterPage() {
             if (!donorProfileResponse.ok) throw new Error('Creating donor profile failed');
 
             // On success
-            router.push('/homepage');
+            router.push('/donor/homepage');
         } catch (error) {
             if (error instanceof Error) {
                 alert(error.message);

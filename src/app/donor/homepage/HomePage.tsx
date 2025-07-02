@@ -72,7 +72,7 @@ export function HomePage() {
                             health.
                             Be the reason someone gets a second chance.
                         </Text>
-                        <Button variant="white" color="red" w="fit-content">
+                        <Button variant="white" color="red" w="fit-content" component={Link} href="/donor/faq#how-you-can-help">
                             How You Can Help
                         </Button>
                     </Box>
@@ -147,7 +147,7 @@ export function HomePage() {
                         <Text size="sm" color="dimmed" mt="sm">
                             Find the nearest donation center and check availability.
                         </Text>
-                        <Button variant="light" color="red" radius="md" mt="md">
+                        <Button variant="light" color="red" radius="md" mt="md" component={Link} href="/donor/faq#where-can-i-donate">
                             Where can I donate?
                         </Button>
                     </Card>
@@ -173,7 +173,7 @@ export function HomePage() {
                         <Text size="sm" color="dimmed" mt="sm">
                             Learn how to prepare before your donation visit.
                         </Text>
-                        <Button variant="light" color="red" radius="md" mt="md">
+                        <Button variant="light" color="red" radius="md" mt="md" component={Link} href="/donor/faq#prepare-to-donate">
                             Prepare to Donate
                         </Button>
                     </Card>
@@ -199,7 +199,7 @@ export function HomePage() {
                         <Text size="sm" color="dimmed" mt="sm">
                             Understand what happens after you donate blood.
                         </Text>
-                        <Button variant="light" color="red" radius="md" mt="md">
+                        <Button variant="light" color="red" radius="md" mt="md" component={Link} href="/donor/faq#aftercare-info">
                             Aftercare Info
                         </Button>
                     </Card>

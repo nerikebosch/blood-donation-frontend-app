@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import dayjs from 'dayjs';
+import { useAuth } from "@/lib/auth";
 
 export interface DonationSlot {
     id: number;
@@ -34,6 +35,8 @@ const LOCATION_OPTIONS = [
     'Mobilny Punkt Poboru Krwi (Plac Grunwaldzki)',
 ];
 
+
+
 // 2. Time slot options: Every hour from 08:00 to 17:00
 const TIME_OPTIONS = Array.from({ length: 10 }, (_, i) =>
     `${String(i + 8).padStart(2, '0')}:00`
@@ -46,8 +49,7 @@ export default function DonationSlotPage() {
     const [time, setTime] = useState<string | null>(null);
     const [slots, setSlots] = useState<DonationSlot[]>([]);
     const [loading, setLoading] = useState(false);
-
-    const token = localStorage.getItem('token');
+    const { token } = useAuth();
 
     const fetchSlots = async () => {
         try {

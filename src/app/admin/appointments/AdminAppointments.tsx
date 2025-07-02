@@ -1,4 +1,3 @@
-// AdminAppointments.tsx
 "use client";
 
 import {
@@ -11,17 +10,18 @@ import {
     Button,
     Select,
     Pagination,
-    Stack,
+    Stack, Container,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
 
 type AppointmentStatus = "PENDING" | "BOOKED" | "CANCELLED" | "COMPLETED";
 
 type Appointment = {
     id: number;
     userId: number;
-    bookedAt: string;                 // ISO date-time
-    status: AppointmentStatus;        // matches the DTO field
+    bookedAt: string;
+    status: AppointmentStatus;
     slot: {
         dateTime: string;
         location: string;
@@ -36,9 +36,8 @@ type Appointment = {
 
 export function AdminAppointments() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "ALL">(
-        "ALL"
-    );
+    const { token } = useAuth();
+    const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "ALL">("ALL");
     const [page, setPage] = useState(1);
     const PAGE_SIZE = 5;
 
@@ -47,17 +46,14 @@ export function AdminAppointments() {
     }, []);
 
     async function fetchAppointments() {
-        const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8080/api/appointments", {
             headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) return; // handle errors as you like
+
+        if (!res.ok) return;
 
         const appts: Omit<Appointment, "user">[] = await res.json();
-        console.log("Raw appointments from server:", appts);
 
-
-        // fetch user info in parallel
         const withUsers = await Promise.all(
             appts.map(async (a) => {
                 let user = null;
@@ -76,7 +72,6 @@ export function AdminAppointments() {
     }
 
     async function updateStatus(id: number, newStatus: AppointmentStatus) {
-        const token = localStorage.getItem("token");
         await fetch(`http://localhost:8080/api/appointments/${id}/status`, {
             method: "PUT",
             headers: {
@@ -87,23 +82,6 @@ export function AdminAppointments() {
         });
         await fetchAppointments();
     }
-
-    // pending only
-    const pendingAppointments = appointments.filter(
-        (a) => a.status === "PENDING"
-    );
-
-    // non-pending + filter by status
-    const filteredAppointments = appointments
-        .filter((a) => a.status !== "PENDING")
-        .filter(
-            (a) => statusFilter === "ALL" || a.status === statusFilter
-        );
-
-    const paginatedAppointments = filteredAppointments.slice(
-        (page - 1) * PAGE_SIZE,
-        page * PAGE_SIZE
-    );
 
     function getStatusColor(s: AppointmentStatus) {
         switch (s) {
@@ -118,13 +96,32 @@ export function AdminAppointments() {
         }
     }
 
+    // ⛔ Limit valid transitions
+    function getNextStatusOptions(status: AppointmentStatus): AppointmentStatus[] {
+        switch (status) {
+            case "BOOKED":
+                return ["COMPLETED", "CANCELLED"];
+            default:
+                return [];
+        }
+    }
+
+    const pendingAppointments = appointments.filter((a) => a.status === "PENDING");
+
+    const filteredAppointments = appointments
+        .filter((a) => a.status !== "PENDING")
+        .filter((a) => statusFilter === "ALL" || a.status === statusFilter);
+
+    const paginatedAppointments = filteredAppointments.slice(
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE
+    );
+
     const renderCard = (a: Appointment) => (
         <Card key={a.id} shadow="sm" radius="md" withBorder mb="sm">
             <Group position="apart">
                 <Text>{new Date(a.slot.dateTime).toLocaleString()}</Text>
-                <Badge color={getStatusColor(a.status)}>
-                    {a.status}
-                </Badge>
+                <Badge color={getStatusColor(a.status)}>{a.status}</Badge>
             </Group>
 
             <Text size="sm" c="dimmed">
@@ -146,7 +143,7 @@ export function AdminAppointments() {
                 </Text>
             )}
 
-            {/* Only show buttons on pending */}
+            {/* PENDING → BOOKED or CANCELLED */}
             {a.status === "PENDING" && (
                 <Group mt="sm">
                     <Button
@@ -164,49 +161,69 @@ export function AdminAppointments() {
                     </Button>
                 </Group>
             )}
+
+            {/* BOOKED → COMPLETED or CANCELLED */}
+            {a.status !== "PENDING" && getNextStatusOptions(a.status).length > 0 && (
+                <Group mt="sm">
+                    <Select
+                        placeholder="Change status"
+                        data={getNextStatusOptions(a.status)}
+                        value={null}
+                        onChange={(v) =>
+                            updateStatus(a.id, v as AppointmentStatus)
+                        }
+                        allowDeselect={false}
+                        size="xs"
+                        w={160}
+                    />
+                </Group>
+            )}
         </Card>
     );
 
     return (
-        <div>
-            <Title order={3} mb="md">
-                Pending Appointments
-            </Title>
-            {pendingAppointments.length ? (
-                pendingAppointments.map(renderCard)
-            ) : (
-                <Text size="sm">No pending appointments.</Text>
-            )}
-
-            <Divider my="lg" />
-
-            <Group mb="md" justify="space-between">
-                <Title order={3}>All Appointments</Title>
-                <Select
-                    data={["ALL", "BOOKED", "COMPLETED", "CANCELLED"]}
-                    value={statusFilter}
-                    onChange={(v) => setStatusFilter(v as any)}
-                    placeholder="Filter by status"
-                    w={200}
-                />
-            </Group>
-
-            <Stack>
-                {paginatedAppointments.length ? (
-                    paginatedAppointments.map(renderCard)
+        <Container >
+            <div>
+                <Title order={3} mb="md">
+                    Pending Appointments
+                </Title>
+                {pendingAppointments.length ? (
+                    pendingAppointments.map(renderCard)
                 ) : (
-                    <Text size="sm">No appointments to show.</Text>
+                    <Text size="sm">No pending appointments.</Text>
                 )}
-            </Stack>
 
-            {filteredAppointments.length > PAGE_SIZE && (
-                <Pagination
-                    total={Math.ceil(filteredAppointments.length / PAGE_SIZE)}
-                    page={page}
-                    onChange={setPage}
-                    mt="md"
-                />
-            )}
-        </div>
+                <Divider my="lg" />
+
+                <Group mb="md" justify="space-between">
+                    <Title order={3}>All Appointments</Title>
+                    <Select
+                        data={["ALL", "BOOKED", "COMPLETED", "CANCELLED"]}
+                        value={statusFilter}
+                        onChange={(v) => setStatusFilter(v as any)}
+                        placeholder="Filter by status"
+                        w={200}
+                    />
+                </Group>
+
+                <Stack>
+                    {paginatedAppointments.length ? (
+                        paginatedAppointments.map(renderCard)
+                    ) : (
+                        <Text size="sm">No appointments to show.</Text>
+                    )}
+                </Stack>
+
+                {filteredAppointments.length > PAGE_SIZE && (
+                    <Group justify="center" mt="md">
+                        <Pagination
+                            total={Math.ceil(filteredAppointments.length / PAGE_SIZE)}
+                            page={page}
+                            onChange={setPage}
+                        />
+                    </Group>
+                )}
+            </div>
+        </Container>
     );
 }
