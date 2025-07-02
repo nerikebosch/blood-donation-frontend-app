@@ -73,7 +73,11 @@ export default function DonationSlotPage() {
         if (!date || !time || !location) return;
 
         const [hour, minute] = time.split(':').map(Number);
-        const dateTime = dayjs(date).hour(hour).minute(minute).second(0).toISOString();
+        const dateTime = dayjs(date)
+            .hour(hour)
+            .minute(minute)
+            .second(0)
+            .format('YYYY-MM-DDTHH:mm:ss');
 
         try {
             const res = await fetch('http://localhost:8080/api/slots', {
@@ -145,38 +149,34 @@ export default function DonationSlotPage() {
                 Existing Slots
             </Title>
 
-            {loading ? (
-                <Loader />
-            ) : (
-                <Table withBorder striped highlightOnHover>
-                    <thead>
-                    <tr>
-                        <th>Date & Time</th>
-                        <th>Location</th>
-                        <th>Capacity</th>
-                        <th>Booked</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+            <Table striped highlightOnHover withColumnBorders>
+                <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th>Date & Time</Table.Th>
+                        <Table.Th>Location</Table.Th>
+                        <Table.Th>Capacity</Table.Th>
+                        <Table.Th>Booked</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
                     {slots.length === 0 ? (
-                        <tr>
-                            <td colSpan={4} style={{ textAlign: 'center' }}>
+                        <Table.Tr>
+                            <Table.Td colSpan={4} style={{ textAlign: 'center' }}>
                                 No slots yet
-                            </td>
-                        </tr>
+                            </Table.Td>
+                        </Table.Tr>
                     ) : (
                         slots.map((slot) => (
-                            <tr key={slot.id}>
-                                <td>{dayjs(slot.dateTime).format('YYYY-MM-DD HH:mm')}</td>
-                                <td>{slot.location}</td>
-                                <td>{slot.capacity}</td>
-                                <td>{slot.bookedCount}</td>
-                            </tr>
+                            <Table.Tr key={slot.id}>
+                                <Table.Td>{dayjs(slot.dateTime).format('YYYY-MM-DD HH:mm')}</Table.Td>
+                                <Table.Td>{slot.location}</Table.Td>
+                                <Table.Td>{slot.capacity}</Table.Td>
+                                <Table.Td>{slot.bookedCount}</Table.Td>
+                            </Table.Tr>
                         ))
                     )}
-                    </tbody>
-                </Table>
-            )}
+                </Table.Tbody>
+            </Table>
         </Container>
     );
 }
