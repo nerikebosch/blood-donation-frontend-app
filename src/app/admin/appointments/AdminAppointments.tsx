@@ -96,7 +96,6 @@ export function AdminAppointments() {
         }
     }
 
-    // ⛔ Limit valid transitions
     function getNextStatusOptions(status: AppointmentStatus): AppointmentStatus[] {
         switch (status) {
             case "BOOKED":
@@ -119,7 +118,7 @@ export function AdminAppointments() {
 
     const renderCard = (a: Appointment) => (
         <Card key={a.id} shadow="sm" radius="md" withBorder mb="sm">
-            <Group position="apart">
+            <Group justify="apart">
                 <Text>{new Date(a.slot.dateTime).toLocaleString()}</Text>
                 <Badge color={getStatusColor(a.status)}>{a.status}</Badge>
             </Group>

@@ -1,70 +1,71 @@
 "use client"
 
-import {Badge, Card, Container, Group, Loader, Text, Title} from "@mantine/core";
-import {useEffect, useState} from "react";
+import {
+    Badge,
+    Card,
+    Container,
+    Group,
+    Loader,
+    Pagination,
+    Text,
+    Title,
+} from "@mantine/core";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 export function DonationHistoryPage() {
     const now = new Date();
-    const [appointments, setAppointments] = useState([]);
-    const [slots, setSlots] = useState([]);
-    const [locations, setLocations] = useState([]);
-    const [loading, setLoading] = useState(true);
     const { token } = useAuth();
 
+    const [appointments, setAppointments] = useState([]);
+    const [slots, setSlots] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const fetchAll = async () => {
-        setLoading(true);
-        try {
-            console.log("token: "+token);
-
-            const [appointmentsRes, slotsRes] = await Promise.all([
-                fetch('http://localhost:8080/api/appointments/mine', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                }),
-                fetch('http://localhost:8080/api/slots', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                }),
-            ]);
-
-            console.log("Slots response status:", slotsRes.status);
-
-            if (!appointmentsRes.ok) {
-                const errorText = await appointmentsRes.text();
-                console.error("Appointments error:", appointmentsRes.status, errorText);
-            }
-
-            if (!slotsRes.ok) {
-                const errorText = await slotsRes.text();
-                console.error("Slots error:", slotsRes.status, errorText);
-                return;
-            }
-
-            const appointments = await appointmentsRes.json();
-            const slots = await slotsRes.json();
-            console.log("Raw slots text:", slots);
-
-            const locations = [...new Set(slots.map(slot => slot.location))];
-
-            setAppointments(appointments);
-            setSlots(slots);
-            setLocations(locations);
-        } catch (error) {
-            console.error('Failed to load data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 5;
 
     useEffect(() => {
+        const fetchAll = async () => {
+            setLoading(true);
+            try {
+                const [appointmentsRes, slotsRes] = await Promise.all([
+                    fetch("http://localhost:8080/api/appointments/mine", {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    fetch("http://localhost:8080/api/slots", {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                ]);
+
+                const appointments = await appointmentsRes.json();
+                const slots = await slotsRes.json();
+
+                setAppointments(appointments);
+                setSlots(slots);
+            } catch (err) {
+                console.error("Fetch error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchAll();
     }, []);
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "BOOKED":
+                return "green";
+            case "CANCELLED":
+                return "red";
+            case "COMPLETED":
+                return "blue";
+            default:
+                return "gray";
+        }
+    };
 
     if (loading) {
         return (
@@ -75,24 +76,18 @@ export function DonationHistoryPage() {
         );
     }
 
-    const past = appointments.filter(appt => new Date(appt.slot.dateTime) <= now);
+    const past = appointments.filter(
+        (appt) => new Date(appt.slot.dateTime) <= now
+    );
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'CONFIRMED': return 'green';
-            case 'CANCELLED': return 'red';
-            case 'COMPLETED': return 'blue';
-            default: return 'gray';
-        }
-    };
+    const paginated = past.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const renderCard = (appt) => (
-
         <Card key={appt.id} shadow="sm" radius="md" withBorder mb="sm">
-            <Group position="apart">
+            <Group justify="apart">
                 <Text>{new Date(appt.slot.dateTime).toLocaleString()}</Text>
-                <Badge color={getStatusColor(appt.appointmentStatus)}>
-                    {appt.appointmentStatus}
+                <Badge color={getStatusColor(appt.status)}>
+                    {appt.status}
                 </Badge>
             </Group>
             <Text size="sm" c="dimmed">
@@ -100,12 +95,27 @@ export function DonationHistoryPage() {
             </Text>
         </Card>
     );
+
     return (
-        <>
-            <Container py="lg">
-                <Title order={3} mb="xs">Past Appointments</Title>
-                {past.length ? past.map(renderCard) : <Text size="sm">No past appointments yet.</Text>}
-            </Container>
-        </>
+        <Container py="lg">
+            <Title order={3} mb="xs">
+                Past Appointments
+            </Title>
+
+            {past.length ? (
+                <>
+                    {paginated.map(renderCard)}
+                    <Group justify="center" mt="md">
+                        <Pagination
+                            total={Math.ceil(past.length / PAGE_SIZE)}
+                            page={page}
+                            onChange={setPage}
+                        />
+                    </Group>
+                </>
+            ) : (
+                <Text size="sm">No past appointments yet.</Text>
+            )}
+        </Container>
     );
 }

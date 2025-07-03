@@ -83,7 +83,7 @@ export default function DonorProfile() {
 
     return (
         <Paper p="lg" maw={800} mx="auto">
-            <Group position="apart" mb="md">
+            <Group justify="apart" mb="md">
                 <Title order={3}>Donor Profile</Title>
                 <Button onClick={() => setEditable((e) => !e)}>
                     {editable ? "Cancel" : "Edit"}

@@ -12,7 +12,6 @@ import {
     Table,
     Stack,
     Select,
-    Loader,
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import dayjs from 'dayjs';
@@ -106,7 +105,7 @@ export default function DonationSlotPage() {
 
     return (
         <Container size="md">
-            <Title align="center" my="md">
+            <Title ta="center" my="md">
                 Admin: Create Donation Slot
             </Title>
 
@@ -123,7 +122,7 @@ export default function DonationSlotPage() {
                     <DatePicker
                         label="Date"
                         value={date}
-                        onChange={setDate}
+                        onChange={(value: Date | null) => setDate(value)}
                         required
                     />
                     <Select
@@ -137,7 +136,11 @@ export default function DonationSlotPage() {
                     <NumberInput
                         label="Capacity"
                         value={capacity}
-                        onChange={(val) => setCapacity(val || 1)}
+                        onChange={(val) => {
+                            if (typeof val === 'number') {
+                                setCapacity(val);
+                            }
+                        }}
                         min={1}
                         required
                     />

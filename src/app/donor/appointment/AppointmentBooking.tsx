@@ -1,5 +1,6 @@
 "use client";
 
+
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import {useState, useMemo, useEffect} from "react";
@@ -19,7 +20,20 @@ import { DatePicker } from '@mantine/dates';
 import dayjs from "dayjs";
 import { useAuth } from "@/lib/auth";
 
-export function AppointmentBooking({ slots, onBooked }) {
+type Slot = {
+    id: number;
+    dateTime: string; // or Date if you're parsing them earlier
+    location: string;
+    capacity: number;
+};
+
+interface AppointmentBookingProps {
+    slots: Slot[];
+    onBooked: () => void;
+}
+
+
+export function AppointmentBooking({ slots, onBooked } : AppointmentBookingProps) {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [loadingSlotId, setLoadingSlotId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);

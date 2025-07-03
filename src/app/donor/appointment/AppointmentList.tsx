@@ -2,22 +2,54 @@
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
-import { Card, Group, Text, Title, Divider, Badge } from '@mantine/core';
+import { Card, Group, Text, Title, Badge } from '@mantine/core';
 
-export function AppointmentList({ appointments }) {
+type Slot = {
+    dateTime: string;
+    location: string;
+};
+
+type Appointment = {
+    id: number;
+    status: 'PENDING' | 'BOOKED' | 'CANCELLED' | 'COMPLETED';
+    slot: Slot;
+};
+
+interface AppointmentListProps {
+    appointments: Appointment[];
+}
+
+export function AppointmentList({ appointments }: AppointmentListProps) {
     const now = new Date();
-    console.log(appointments);
 
-    const upcoming = appointments.filter(appt => new Date(appt.slot.dateTime) > now);
-    const past = appointments.filter(appt => new Date(appt.slot.dateTime) <= now);
+    const upcoming = appointments.filter(
+        (appt) => new Date(appt.slot.dateTime) > now
+    );
 
-    const renderCard = (appt) => (
+    appointments.forEach(appt => {
+        console.log('Appointment ID:', appt.id, 'Status:', appt.status);
+    });
 
+
+    const getStatusColor = (status: Appointment['status']) => {
+        switch (status) {
+            case 'BOOKED':
+                return 'green';
+            case 'CANCELLED':
+                return 'red';
+            case 'COMPLETED':
+                return 'blue';
+            default:
+                return 'gray';
+        }
+    };
+
+    const renderCard = (appt: Appointment) => (
         <Card key={appt.id} shadow="sm" radius="md" withBorder mb="sm">
-            <Group position="apart">
+            <Group justify="apart">
                 <Text>{new Date(appt.slot.dateTime).toLocaleString()}</Text>
-                <Badge color={getStatusColor(appt.appointmentStatus)}>
-                    {appt.appointmentStatus}
+                <Badge color={getStatusColor(appt.status)}>
+                    {appt.status}
                 </Badge>
             </Group>
             <Text size="sm" c="dimmed">
@@ -26,19 +58,16 @@ export function AppointmentList({ appointments }) {
         </Card>
     );
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'CONFIRMED': return 'green';
-            case 'CANCELLED': return 'red';
-            case 'COMPLETED': return 'blue';
-            default: return 'gray';
-        }
-    };
-
     return (
         <>
-            <Title order={3} mb="xs">Upcoming Appointments</Title>
-            {upcoming.length ? upcoming.map(renderCard) : <Text size="sm">No upcoming appointments.</Text>}
+            <Title order={3} mb="xs">
+                Upcoming Appointments
+            </Title>
+            {upcoming.length ? (
+                upcoming.map(renderCard)
+            ) : (
+                <Text size="sm">No upcoming appointments.</Text>
+            )}
         </>
     );
 }

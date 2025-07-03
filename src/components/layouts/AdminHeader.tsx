@@ -4,17 +4,12 @@ import '@mantine/core/styles.css';
 import {
     IconBell,
     IconCalendar,
-    IconDroplet,
-    IconUser,
     IconVaccine,
     IconClipboardText,
     IconClock,
-    IconChartBar,
-    IconSettings,
 } from '@tabler/icons-react';
 
 import {
-    Anchor,
     Box,
     Burger,
     Button,
@@ -42,9 +37,7 @@ const adminMenuData = [
     { icon: IconClipboardText, title: 'Manage Donors', description: 'View donor list and their details', href: '/admin/donors' },
     { icon: IconVaccine, title: 'Medical Tests', description: 'Add or update test results for donors', href: '/admin/tests' },
     { icon: IconClock, title: 'Donation Slots', description: 'Create or manage available time slots', href: '/admin/donationslot' },
-    { icon: IconChartBar, title: 'Reports & Stats', description: 'View analytics on donations, appointments', href: '/admin/reports' },
-    { icon: IconBell, title: 'Notifications', description: 'See donor submissions needing action', href: '/admin/notifications' },
-    { icon: IconSettings, title: 'Settings', description: 'Admin account settings, log out', href: '/admin/settings' },
+    { icon: IconBell, title: 'Notifications', description: 'See donor submissions needing action', href: '/admin/notifications' }
 ];
 
 export default function AdminHeader() {
@@ -72,7 +65,7 @@ export default function AdminHeader() {
         <Box pb={10}>
             <header className={classes.header}>
                 <Group justify="space-between" h="100%">
-                    <Link href="/admin">
+                    <Link href="/admin/homepage">
                         <Group align="center" gap="sm" wrap="nowrap">
                             <Image src="/logo_blood_donation.png" alt="Red Hope Logo" width={40} height={40} fit="contain" />
                             <Title order={2} fw={600} style={{ whiteSpace: 'nowrap' }}>Red Hope Admin</Title>
@@ -100,9 +93,16 @@ export default function AdminHeader() {
                     </Group>
 
                     <Group visibleFrom="sm">
-                        <Link href="/logout">
-                            <Button variant="default">Logout</Button>
-                        </Link>
+                        <Button
+                            variant="default"
+                            onClick={() => {
+                                localStorage.removeItem("token");
+                                localStorage.removeItem("role");
+                                window.location.href = "/loginpage";
+                            }}
+                        >
+                            Logout
+                        </Button>
                     </Group>
 
                     <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
